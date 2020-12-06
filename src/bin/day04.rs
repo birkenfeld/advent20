@@ -2,7 +2,7 @@ use advtools::prelude::*;
 use advtools::input::input_string;
 
 fn main() {
-    let needed_types: HashSet<_> = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"].iter().cloned().collect();
+    let needed_types: HashSet<_> = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"].iter().copied().collect();
     let in_range = |x: &str, low, high| x.parse().map_or(false, |x: i32| x >= low && x <= high);
 
     let mut all_fields = 0;
@@ -23,7 +23,7 @@ fn main() {
                     if unit == "cm" { in_range(num, 150, 193) } else { in_range(num, 59, 76) }
                 },
                 "hcl" => val.starts_with('#') && u32::from_str_radix(&val[1..], 16).is_ok(),
-                "ecl" => ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].iter().any(|&x| x == val),
+                "ecl" => ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(&val),
                 "pid" => val.len() == 9 && val.chars().all(|ch| ch.is_digit(10)),
                 "cid" => continue,
                 _ => false,
@@ -33,9 +33,7 @@ fn main() {
 
         if found_types == needed_types {
             all_fields += 1;
-            if valid {
-                all_valid += 1;
-            }
+            all_valid += valid as u32;
         }
     }
 
