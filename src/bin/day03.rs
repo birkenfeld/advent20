@@ -8,14 +8,13 @@ fn main() {
         .collect();
     let nx = grid[0].len();
 
-    let count = |&(right, down)| (0..grid.len())
-        .step_by(down)
-        .enumerate()
-        .filter(|(ix, y)| grid[*y][(ix * right) % nx] == '#')
+    let count_trees = |&(right, down)| (0..grid.len()).step_by(down)
+        .zip((0..).step_by(right))
+        .filter(|&(y, x)| grid[y][x % nx] == '#')
         .count();
 
-    advtools::verify("Trees with 1/3", count(&(3, 1)), 257);
+    advtools::verify("Trees with 1/3", count_trees(&(3, 1)), 257);
 
-    let mult: usize = directions.iter().map(count).product();
-    advtools::verify("Product of trees", mult, 1744787392);
+    let prod: usize = directions.iter().map(count_trees).product();
+    advtools::verify("Product of trees", prod, 1744787392);
 }
