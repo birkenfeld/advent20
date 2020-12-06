@@ -4,19 +4,10 @@ use advtools::input::iter_input;
 fn main() {
     let items: Vec<i32> = iter_input().sorted().collect();
 
-    for comb in items.iter().combinations(2) {
-        if comb[0] + comb[1] == 2020 {
-            let product = comb[0] * comb[1];
-            advtools::verify("Product of 2", product, 41979);
-            break;
-        }
-    }
+    let find_product = |n| items.iter().combinations(n)
+        .find(|c| c.iter().copied().sum::<i32>() == 2020)
+        .map_or(0, |c| c.into_iter().product::<i32>());
 
-    for comb in items.iter().combinations(3) {
-        if comb[0] + comb[1] + comb[2] == 2020 {
-            let product = comb[0] * comb[1] * comb[2];
-            advtools::verify("Product of 3", product, 193416912);
-            break;
-        }
-    }
+    advtools::verify("Product of 2", find_product(2), 41979);
+    advtools::verify("Product of 3", find_product(3), 193416912);
 }
