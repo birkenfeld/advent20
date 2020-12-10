@@ -12,7 +12,7 @@ fn main() {
 
     let weakness = (2..numbers.len())
         .flat_map(|len| numbers.windows(len))
-        .find(|chunk| chunk.iter().sum::<u64>() == not_sum)
+        .find(|win| win.iter().sum::<u64>() == not_sum)
         .unwrap();
     let (min, max) = weakness.iter().minmax().into_option().unwrap();
     advtools::verify("Encryption weakness", min + max, 183278487);
