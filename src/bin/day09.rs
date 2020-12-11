@@ -5,7 +5,7 @@ fn main() {
     let numbers: Vec<u64> = iter_input().collect();
 
     let not_sum = numbers.windows(26)
-        .find(|win| win[..25].iter().combinations(2).all(|x| x[0] + x[1] != win[25]))
+        .find(|win| win[..25].iter().tuple_combinations().all(|(x, y)| x + y != win[25]))
         .map(|win| win[25])
         .unwrap();
     advtools::verify("Number that does not sum", not_sum, 1504371145);
