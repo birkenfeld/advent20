@@ -1,8 +1,8 @@
 use advtools::prelude::*;
-use advtools::input::iter_input;
+use advtools::input::iter_lines;
 
 fn main() {
-    let all_ids: HashSet<u32> = iter_input::<String>()
+    let all_ids: HashSet<u32> = iter_lines()
         .map(|line| line.chars().take(10).enumerate()
              .map(|(i, c)| ((c == 'B' || c == 'R') as u32) << (9 - i))
              .sum())

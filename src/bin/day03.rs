@@ -1,10 +1,10 @@
-use advtools::input::iter_input;
+use advtools::input::iter_lines;
 
 fn main() {
     let directions = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
 
-    let grid: Vec<Vec<char>> = iter_input()
-        .map(|line: String| line.chars().collect())
+    let grid: Vec<Vec<char>> = iter_lines()
+        .map(|line| line.chars().collect())
         .collect();
     let nx = grid[0].len();
 
