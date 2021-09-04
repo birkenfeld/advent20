@@ -54,7 +54,7 @@ fn main() {
     let n = msgs.iter()
                 .filter(|msg| expand(&rules, &rules[&0], msg) == Some(msg.len()))
                 .count();
-    advtools::verify("simple rules", n, 142);
+    advtools::verify("Simple rules", n, 142);
 
     let n = msgs.iter()
                 .filter_map(|msg| (2..10).cartesian_product(1..5).find(|&(n, m)| {
@@ -62,5 +62,5 @@ fn main() {
                     n > m && expand(&rules, &vec![rule], msg) == Some(msg.len())
                 }))
                 .count();
-    advtools::verify("complex rules", n, 294);
+    advtools::verify("Complex rules", n, 294);
 }

@@ -64,7 +64,7 @@ fn main() {
     let sum: i64 = iter_lines()
         .map(|line| eval(parse_expr(&mut put_back(line.chars()), false)))
         .sum();
-    advtools::verify("no precedence", sum, 3885386961962i64);
+    advtools::verify("No precedence", sum, 3885386961962i64);
 
     let sum: i64 = iter_lines()
         .map(|line| eval(parse_expr(&mut put_back(line.chars()), true)))
