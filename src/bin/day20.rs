@@ -1,10 +1,6 @@
 use advtools::prelude::*;
 use advtools::input::{iter_lines, to_u64};
-use advtools::grid::{Grid, Dir::*};
-
-const N: usize = 12;
-const M: usize = 8;
-const W: usize = N*M - 1;
+use advtools::grid::{Grid, Pos, Dir, Dir::*};
 
 const MONSTER: &[(usize, usize)] = &[
     (0, 18),
@@ -12,44 +8,61 @@ const MONSTER: &[(usize, usize)] = &[
     (2, 1), (2, 4), (2, 7), (2, 10), (2, 13), (2, 16)
 ];
 
-const COORDINATES: &[fn(usize, usize) -> (usize, usize)] = &[
-    |x, y| (x, y),
-    |x, y| (W-x, y),
-    |x, y| (x, W-y),
-    |x, y| (W-x, W-y),
-    |x, y| (y, x),
-    |x, y| (y, W-x),
-    |x, y| (W-y, x),
-    |x, y| (W-y, W-x),
+// Coordinate transformations for all possible rotations/flips
+type Trans = fn(usize, usize, usize) -> (usize, usize);
+const TRANS: &[Trans] = &[
+    |_, x, y| (x, y),
+    |w, x, y| (w-x, y),
+    |w, x, y| (x, w-y),
+    |w, x, y| (w-x, w-y),
+    |_, x, y| (y, x),
+    |w, x, y| (y, w-x),
+    |w, x, y| (w-y, x),
+    |w, x, y| (w-y, w-x),
 ];
 
-fn edge_to_int(it: impl Iterator<Item=bool>) -> (u16, u16) {
-    let mut fwd = 0;
-    let mut rev = 0;
-    for item in it {
-        if item {
-            fwd |= 1;
-            rev |= 0x8000;
-        }
-        fwd <<= 1;
-        rev >>= 1;
-    }
-    (fwd, rev >> 4)
+struct Tile {
+    index: u64,
+    grid: Grid<bool>,
+    trans: Trans,
 }
 
-fn edges(pattern: &[Vec<bool>]) -> (u16, u16, u16, u16, u16, u16, u16, u16) {
-    let (t, rt) = edge_to_int(pattern[0].iter().cloned());
-    let (r, rr) = edge_to_int(pattern.iter().map(|x| *x.last().unwrap()));
-    let (b, rb) = edge_to_int(pattern.last().unwrap().iter().cloned());
-    let (l, rl) = edge_to_int(pattern.iter().map(|x| x[0]));
-    (t, rt, r, rr, b, rb, l, rl)
+fn edges_match(tile1: &Tile, dir: Dir, tile2: &Tile, t2: Trans) -> bool {
+    let w = tile1.grid.width() - 1;
+    let t1 = tile1.trans;
+    match dir {
+        U => (0..=w).all(|x| tile1.grid[t1(w, x, 0)] == tile2.grid[t2(w, x, w)]),
+        R => (0..=w).all(|y| tile1.grid[t1(w, w, y)] == tile2.grid[t2(w, 0, y)]),
+        D => (0..=w).all(|x| tile1.grid[t1(w, x, w)] == tile2.grid[t2(w, x, 0)]),
+        L => (0..=w).all(|y| tile1.grid[t1(w, 0, y)] == tile2.grid[t2(w, w, y)]),
+    }
+}
+
+fn place_neighbors(tiles: &mut Vec<Tile>, grid: &mut Grid<Option<Tile>>, pos: Pos) {
+    'directions:
+    for dir in Dir::iter() {
+        let new_pos = pos.to(dir);
+        // If the grid in the given orientation is still empty, try to find some tile
+        // which in some orientation fits the respective edge of cur_tile
+        if let Some(None) = grid.get(new_pos) {
+            let cur_tile = grid[pos].as_ref().unwrap();
+            for (i, new_tile) in tiles.iter().enumerate() {
+                for &trans in TRANS {
+                    if edges_match(cur_tile, dir, new_tile, trans) {
+                        let mut tile = tiles.remove(i);
+                        tile.trans = trans;
+                        grid[new_pos] = Some(tile);
+                        place_neighbors(tiles, grid, new_pos);
+                        continue 'directions;
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn main() {
-    let mut unoriented_tiles = HashMap::new();
-    let mut tiles = HashMap::new();
-    let mut tile_edges = HashMap::new();
-    let mut by_edge: HashMap<_, Vec<_>> = HashMap::new();
+    let mut tiles = Vec::new();
     let mut tile = vec![];
     let mut last_index = 0;
     for line in iter_lines() {
@@ -57,123 +70,55 @@ fn main() {
             last_index = to_u64(line[5..].trim_matches(':'));
         } else {
             tile.push(line.chars().map(|ch| ch == '#').collect_vec());
-            if tile.len() == M+2 {
-                unoriented_tiles.insert(last_index, std::mem::take(&mut tile));
+            if tile.len() == tile[0].len() {
+                tiles.push(Tile {
+                    index: last_index,
+                    grid: Grid::new(std::mem::take(&mut tile)),
+                    trans: TRANS[0]  // this could be any of them
+                });
             }
         }
     }
+    let nt = (tiles.len() as f64 + 0.5).sqrt() as usize;
+    let np = tiles[0].grid.width() - 2;
 
-    let (t, _, r, _, b, _, l, _) = edges(&unoriented_tiles[&last_index]);
-    tile_edges.insert(last_index, edges(&unoriented_tiles[&last_index]));
-    by_edge.entry(t).or_default().push((last_index, U));
-    by_edge.entry(r).or_default().push((last_index, R));
-    by_edge.entry(b).or_default().push((last_index, D));
-    by_edge.entry(l).or_default().push((last_index, L));
-    tiles.insert(last_index, unoriented_tiles.remove(&last_index).unwrap());
-    while !unoriented_tiles.is_empty() {
-        for &index in unoriented_tiles.keys() {
-            let i_edges = edges(&unoriented_tiles[&index]);
-            let entry = if let Some(l) = by_edge.get(&i_edges.0) {
-                (l[0].1, U, false)
-            } else if let Some(l) = by_edge.get(&i_edges.1) {
-                (l[0].1, U, true)
-            } else if let Some(l) = by_edge.get(&i_edges.2) {
-                (l[0].1, R, false)
-            } else if let Some(l) = by_edge.get(&i_edges.3) {
-                (l[0].1, R, true)
-            } else if let Some(l) = by_edge.get(&i_edges.4) {
-                (l[0].1, D, false)
-            } else if let Some(l) = by_edge.get(&i_edges.5) {
-                (l[0].1, D, true)
-            } else if let Some(l) = by_edge.get(&i_edges.6) {
-                (l[0].1, L, false)
-            } else if let Some(l) = by_edge.get(&i_edges.7) {
-                (l[0].1, L, true)
-            } else {
-                continue;
-            };
-            let mut pattern = unoriented_tiles.remove(&index).unwrap();
-            pattern = match entry {
-                (R, U, false) | (U, R, false) | (L, U, false) | (R, D, false) |
-                (L, D, false) | (D, L, false) | (U, R, true) | (D, L, true) =>
-                    (0..10).map(|y| (0..10).map(|x| pattern[9-x][y]).collect()).collect(),
-                (U, U, false) | (D, D, false) | (U, U, true) | (R, R, true) |
-                (D, D, true) | (L, L, true) | (R, L, true) | (L, R, true) =>
-                    (0..10).map(|y| (0..10).map(|x| pattern[9-y][9-x]).collect()).collect(),
-                (D, R, false) | (U, L, false) | (R, U, true) | (L, U, true) |
-                (D, R, true) | (L, D, true) | (R, D, true) | (U, L, true) =>
-                    (0..10).map(|y| (0..10).map(|x| pattern[x][9-y]).collect()).collect(),
-                _ => pattern,
-            };
-            pattern = match entry {
-                (U|R, U|R, false) | (D|L, D|L, false) | (D|L, U|R, true) | (U|R, D|L, true) =>
-                    pattern.into_iter().map(|mut v| { v.reverse(); v }).collect(),
-                _ => pattern,
-            };
-            let (t, _, r, _, b, _, l, _) = edges(&pattern);
-            tile_edges.insert(index, edges(&pattern));
-            tiles.insert(index, pattern);
-            by_edge.entry(t).or_default().push((index, U));
-            by_edge.entry(r).or_default().push((index, R));
-            by_edge.entry(b).or_default().push((index, D));
-            by_edge.entry(l).or_default().push((index, L));
-            break;
-        }
-    }
+    // Create a grid of tiles and place an arbitrary tile in the middle; the grid is
+    // large enough so that the starting tile can be anywhere
+    let mut tile_grid = Grid::<Option<Tile>>::empty(2*nt+1, 2*nt+1);
+    let middle = Pos(nt as i32, nt as i32);
+    tile_grid[middle] = Some(tiles.pop().unwrap());
 
-    let mut corner_indices = vec![];
-    let mut painted = 0;
-    for &index in tiles.keys() {
-        let (t, _, r, _, b, _, l, _) = tile_edges[&index];
-        if by_edge[&t].len() == 1 && by_edge[&l].len() == 1 {
-            painted = index;
-        }
-        if by_edge[&t].len() + by_edge[&r].len() + by_edge[&b].len() + by_edge[&l].len() == 6 {
-            corner_indices.push(index);
-        }
-    }
+    // Recursively place all neighbors with proper orientation
+    place_neighbors(&mut tiles, &mut tile_grid, middle);
 
-    let corner_prod: u64 = corner_indices.iter().product();
+    // Find edges (min x/y coordinates filled)
+    let xmin = (0..=nt).find(|&x| tile_grid[(x, nt)].is_some()).unwrap();
+    let ymin = (0..=nt).find(|&y| tile_grid[(nt, y)].is_some()).unwrap();
+    let (xmax, ymax) = (xmin + nt-1, ymin + nt-1);
+
+    // Calculate product of corner indices
+    let corner_prod = [(xmin, ymin), (xmax, ymin), (xmin, ymax), (xmax, ymax)]
+        .iter()
+        .map(|&pos| tile_grid[pos].as_ref().unwrap().index)
+        .product::<u64>();
     advtools::verify("Corner product", corner_prod, 18449208814679u64);
 
-    let mut grid = Grid::from_iter(N*M, std::iter::repeat(false).take(N*N*M*M));
-    let (mut y, mut x) = (0, 0);
-    loop {
-        let pattern = tiles.remove(&painted).unwrap();
-        for px in 0..8 {
-            for py in 0..8 {
-                grid[(M*x + px, M*y + py)] = pattern[py + 1][px + 1];
-            }
+    // Paint non-edge pixels into a big grid
+    let mut grid = Grid::<bool>::empty(nt*np, nt*np);
+    for (x, y) in (0..nt).cartesian_product(0..nt) {
+        let tile = tile_grid[(xmin + x, ymin + y)].as_ref().unwrap();
+        for (px, py) in (0..np).cartesian_product(0..np) {
+            grid[(np*x + px, np*y + py)] = tile.grid[(tile.trans)(np+1, px+1, py+1)];
         }
-        if tiles.is_empty() {
-            break;
-        }
-        let edge = if y % 2 == 0 {
-            if x == N-1 {
-                y += 1;
-                tile_edges[&painted].4
-            } else {
-                x += 1;
-                tile_edges[&painted].2
-            }
-        } else {
-            if x == 0 {
-                y += 1;
-                tile_edges[&painted].4
-            } else {
-                x -= 1;
-                tile_edges[&painted].6
-            }
-        };
-        painted = by_edge[&edge].iter().find(|x| tiles.contains_key(&x.0)).unwrap().0;
     }
 
-    // Search for monsters
-    for c in COORDINATES {
-        for y in 0..=W-3 {
-            for x in 0..=W-20 {
-                if MONSTER.iter().all(|(dy, dx)| grid[c(x+dx, y+dy)]) {
-                    MONSTER.iter().for_each(|(dy, dx)| grid[c(x+dx, y+dy)] = false);
+    // Search for monsters, we can reuse the same transformations
+    let w = nt*np - 1;
+    for t in TRANS {
+        for y in 0..=w-3 {
+            for x in 0..=w-20 {
+                if MONSTER.iter().all(|(dy, dx)| grid[t(w, x+dx, y+dy)]) {
+                    MONSTER.iter().for_each(|(dy, dx)| grid[t(w, x+dx, y+dy)] = false);
                 }
             }
         }
