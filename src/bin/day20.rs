@@ -1,11 +1,12 @@
 use advtools::prelude::*;
 use advtools::input::{iter_lines, to_u64};
 use advtools::grid::{Grid, Pos, Dir, Dir::*};
+use advtools::itertools::iproduct;
 
 const MONSTER: &[(usize, usize)] = &[
-    (0, 18),
-    (1, 0), (1, 5), (1, 6), (1, 11), (1, 12), (1, 17), (1, 18), (1, 19),
-    (2, 1), (2, 4), (2, 7), (2, 10), (2, 13), (2, 16)
+    (18, 0),
+    (0, 1), (5, 1), (6, 1), (11, 1), (12, 1), (17, 1), (18, 1), (19, 1),
+    (1, 2), (4, 2), (7, 2), (10, 2), (13, 2), (16, 2),
 ];
 
 // Coordinate transformations for all possible rotations/flips
@@ -81,48 +82,40 @@ fn main() {
     }
     let nt = (tiles.len() as f64 + 0.5).sqrt() as usize;
     let np = tiles[0].grid.width() - 2;
+    let nf = nt*np;
 
     // Create a grid of tiles and place an arbitrary tile in the middle; the grid is
     // large enough so that the starting tile can be anywhere
-    let mut tile_grid = Grid::<Option<Tile>>::empty(2*nt+1, 2*nt+1);
+    let mut grid = Grid::<Option<Tile>>::empty(2*nt+1, 2*nt+1);
     let middle = Pos(nt as i32, nt as i32);
-    tile_grid[middle] = Some(tiles.pop().unwrap());
+    grid[middle] = Some(tiles.pop().unwrap());
 
     // Recursively place all neighbors with proper orientation
-    place_neighbors(&mut tiles, &mut tile_grid, middle);
+    place_neighbors(&mut tiles, &mut grid, middle);
 
     // Find edges (min x/y coordinates filled)
-    let xmin = (0..=nt).find(|&x| tile_grid[(x, nt)].is_some()).unwrap();
-    let ymin = (0..=nt).find(|&y| tile_grid[(nt, y)].is_some()).unwrap();
+    let xmin = (0..=nt).find(|&x| grid[(x, nt)].is_some()).unwrap();
+    let ymin = (0..=nt).find(|&y| grid[(nt, y)].is_some()).unwrap();
     let (xmax, ymax) = (xmin + nt-1, ymin + nt-1);
 
     // Calculate product of corner indices
     let corner_prod = [(xmin, ymin), (xmax, ymin), (xmin, ymax), (xmax, ymax)]
         .iter()
-        .map(|&pos| tile_grid[pos].as_ref().unwrap().index)
+        .map(|&pos| grid[pos].as_ref().unwrap().index)
         .product::<u64>();
     advtools::verify("Corner product", corner_prod, 18449208814679u64);
 
-    // Paint non-edge pixels into a big grid
-    let mut grid = Grid::<bool>::empty(nt*np, nt*np);
-    for (x, y) in (0..nt).cartesian_product(0..nt) {
-        let tile = tile_grid[(xmin + x, ymin + y)].as_ref().unwrap();
-        for (px, py) in (0..np).cartesian_product(0..np) {
-            grid[(np*x + px, np*y + py)] = tile.grid[(tile.trans)(np+1, px+1, py+1)];
-        }
-    }
+    // Helper to get a pixel in the final stitched image
+    let pixel = |(x, y)| {
+        let tile = grid[(xmin + x/np, ymin + y/np)].as_ref().unwrap();
+        tile.grid[(tile.trans)(np+1, 1 + x%np, 1 + y%np)]
+    };
 
     // Search for monsters, we can reuse the same transformations
-    let w = nt*np - 1;
-    for t in TRANS {
-        for y in 0..=w-3 {
-            for x in 0..=w-20 {
-                if MONSTER.iter().all(|(dy, dx)| grid[t(w, x+dx, y+dy)]) {
-                    MONSTER.iter().for_each(|(dy, dx)| grid[t(w, x+dx, y+dy)] = false);
-                }
-            }
-        }
-    }
+    let monsters = iproduct!(TRANS, 0..nf-20, 0..nf-3).filter(
+        |(&t, x, y)| MONSTER.iter().all(|(dx, dy)| pixel(t(nf-1, x+dx, y+dy)))
+    ).count();
+    let total = iproduct!(0..nf, 0..nf).filter(|&pos| pixel(pos)).count();
 
-    advtools::verify("Roughness", grid.count(|&x| x), 1559);
+    advtools::verify("Roughness", total - monsters*MONSTER.len(), 1559);
 }
