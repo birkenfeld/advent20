@@ -1,7 +1,6 @@
 use advtools::prelude::*;
 use advtools::input::{iter_lines, to_u64};
 use advtools::grid::{Grid, Pos, Dir, Dir::*};
-use advtools::itertools::iproduct;
 
 const MONSTER: &[(usize, usize)] = &[
     (18, 0),

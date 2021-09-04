@@ -1,6 +1,5 @@
 use advtools::prelude::*;
 use advtools::input::iter_lines;
-use advtools::itertools::iproduct;
 use std::ops::Range;
 
 const N: isize = 18;
