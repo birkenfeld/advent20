@@ -2,7 +2,7 @@ use std::{collections::hash_map::DefaultHasher, hash::{Hash, Hasher}};
 use advtools::prelude::*;
 use advtools::input::{iter_lines, to_u8};
 
-type Deck = ArrayVec<[u8; 50]>;
+type Deck = ArrayVec<u8, 50>;
 
 fn play(mut deck1: Deck, mut deck2: Deck, rec: bool) -> (bool, Deck) {
     let mut seen = HashSet::new();
