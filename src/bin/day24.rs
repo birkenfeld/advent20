@@ -14,12 +14,12 @@ fn main() {
                 'e' => pos.step_right(),
                 'w' => pos.step_left(),
                 's' => {
-                    pos.step_up();
-                    if chars.next() == Some('e') { pos.step_right() }
-                }
-                'n' => {
                     pos.step_down();
                     if chars.next() == Some('w') { pos.step_left() }
+                }
+                'n' => {
+                    pos.step_up();
+                    if chars.next() == Some('e') { pos.step_right() }
                 }
                 _ => unreachable!()
             }
