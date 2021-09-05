@@ -6,7 +6,7 @@ fn main() {
     let mut all_count = 0;
 
     for group in input_string().split("\n\n") {
-        let any_yes = group.chars().filter(|&ch| ch != '\n').collect::<HashSet<_>>();
+        let any_yes = HashSet::from_iter(group.chars().filter(|&ch| ch != '\n'));
         any_count += any_yes.len();
 
         let all_yes = group.lines().map(|l| l.chars().collect::<HashSet<_>>())

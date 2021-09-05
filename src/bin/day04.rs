@@ -2,7 +2,7 @@ use advtools::prelude::*;
 use advtools::input::input_string;
 
 fn main() {
-    let needed_types: HashSet<_> = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"].iter().copied().collect();
+    let needed_types = HashSet::from_iter(["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]);
     let in_range = |x: &str, low, high| x.parse().map_or(false, |x: i32| x >= low && x <= high);
 
     let mut all_fields = 0;
