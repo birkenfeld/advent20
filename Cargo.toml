@@ -3,14 +3,14 @@ name = "advent20"
 description = "Solutions for Advent of Code 2020."
 version = "0.1.0"
 authors = ["Georg Brandl <georg@python.org>"]
-edition = "2018"
+edition = "2021"
 
 [[bench]]
 name = "days"
 harness = false
 
 [dependencies]
-advtools = { version = "0.6.0", path = "../advtools" }
+advtools = { version = "0.7.0", path = "../advtools" }
 num = "0.4.0"
 
 [dev-dependencies]
