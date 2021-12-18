@@ -1,12 +1,12 @@
-use advtools::prelude::*;
-use advtools::input::iter_input;
-use std::iter::once;
+use advtools::input;
 
 // number of arrangements for each run of 1-jolt differences
 const SINGLE_ARRANGE: [u64; 5] = [1, 1, 2, 4, 7];
 
 fn main() {
-    let mut jolts: Vec<u32> = once(0).chain(iter_input().sorted()).collect();
+    let mut jolts = input::parse_vec();
+    jolts.push(0);
+    jolts.sort_unstable();
     jolts.push(jolts[jolts.len() - 1] + 3);
 
     let mut diffs = (0, 0);

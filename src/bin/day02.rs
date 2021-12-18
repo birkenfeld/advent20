@@ -1,7 +1,7 @@
-use advtools::input::iter_input_regex;
+use advtools::input;
 
 fn main() {
-    let pws: Vec<(_, _, char, String)> = iter_input_regex(r"(\d+)-(\d+) (.): (.*)").collect();
+    let pws: Vec<(_, _, char, &str)> = input::rx_lines(r"(\d+)-(\d+) (.): (.*)").collect();
 
     let count1 = pws.iter().filter(|(min, max, ch, pw)| {
         let n = pw.chars().filter(|c| c == ch).count();

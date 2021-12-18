@@ -1,5 +1,5 @@
 use advtools::grid::{Grid, Pos};
-use advtools::input::iter_lines;
+use advtools::input;
 
 #[derive(Clone, PartialEq)]
 enum Tile {
@@ -39,7 +39,7 @@ fn run(mut grid: Grid<Tile>, dist_limit: i32, occ_limit: usize) -> usize {
 }
 
 fn main() {
-    let grid = Grid::new(iter_lines().map(|line| {
+    let grid = Grid::new(input::lines().map(|line| {
         line.chars().map(|ch| if ch == 'L' { Tile::Seat } else { Tile::Floor }).collect()
     }));
 

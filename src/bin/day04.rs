@@ -1,5 +1,5 @@
-use advtools::prelude::*;
-use advtools::input::input_string;
+use advtools::prelude::{HashSet, Itertools};
+use advtools::input;
 
 fn main() {
     let needed_types = HashSet::from_iter(["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]);
@@ -8,11 +8,11 @@ fn main() {
     let mut all_fields = 0;
     let mut all_valid = 0;
 
-    for passport in input_string().split("\n\n") {
+    for passport in input::string().split("\n\n") {
         let mut found_types = HashSet::new();
         let mut valid = true;
 
-        for info in passport.trim().split_whitespace() {
+        for info in passport.split_whitespace() {
             let (key, val) = info.split(':').collect_tuple().unwrap();
             valid &= match key {
                 "byr" => in_range(val, 1920, 2002),

@@ -1,5 +1,4 @@
-use advtools::prelude::*;
-use advtools::input::iter_input;
+use advtools::input;
 
 fn pow_mod(mut base: u64, mut exp: u64) -> u64 {
     let mut result = 1;
@@ -12,7 +11,7 @@ fn pow_mod(mut base: u64, mut exp: u64) -> u64 {
 }
 
 fn main() {
-    let (k1, k2) = iter_input::<u64>().collect_tuple().unwrap();
+    let (k1, k2) = input::parse();
     for l in 0.. {
         let tf = pow_mod(7, l);
         if tf == k1 || tf == k2 {

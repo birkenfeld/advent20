@@ -1,8 +1,8 @@
-use advtools::prelude::*;
-use advtools::input::iter_input;
+use advtools::prelude::Itertools;
+use advtools::input;
 
 fn main() {
-    let numbers: Vec<u64> = iter_input().collect();
+    let numbers = input::parse_vec::<u64>();
 
     let not_sum = numbers.windows(26)
         .find(|win| win[..25].iter().tuple_combinations().all(|(x, y)| x + y != win[25]))

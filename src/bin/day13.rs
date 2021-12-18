@@ -1,10 +1,9 @@
-use advtools::prelude::*;
-use advtools::input::{iter_lines, to_i64};
+use advtools::prelude::Itertools;
+use advtools::input;
 use num::Integer;
 
 fn main() {
-    let (earliest, buses) = iter_lines().next_tuple().unwrap();
-    let earliest = to_i64(earliest);
+    let (earliest, buses) = input::rx_parse::<(i64, &str)>(r"(\d+)\n(.+)");
     let all_buses = buses.split(',')
         .enumerate()
         .filter_map(|(i, x)| x.parse::<i64>().ok().map(|n| (n, i as i64)))
@@ -37,7 +36,7 @@ fn chinese_remainder(groups: &[(i64, i64)]) -> i64 {
     let mut sum = 0;
     for &(n, dt) in groups {
         let p = prod / n;
-        sum = sum + (n - dt) as i128 * (mod_inv(p, n) as i128) * (p as i128);
+        sum += (n - dt) as i128 * (mod_inv(p, n) as i128) * (p as i128);
     }
     (sum % prod as i128) as i64
 }

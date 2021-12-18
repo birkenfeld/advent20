@@ -1,12 +1,12 @@
 use advtools::grid::{Pos, Dir};
-use advtools::input::{iter_lines, to_i32};
+use advtools::input;
 
 fn main() {
     let mut pos = Pos(0i32, 0);
     let mut dir = Dir::R;
 
-    for line in iter_lines() {
-        match (&line[..1], to_i32(&line[1..])) {
+    for line in input::rx_lines(r"(.)(\d+)") {
+        match line {
             ("F", n) => for _ in 0..n { pos.step(dir); }
             ("N", n) => for _ in 0..n { pos.step_up(); }
             ("S", n) => for _ in 0..n { pos.step_down(); }
@@ -24,8 +24,8 @@ fn main() {
     let mut wpos = Pos(10i32, -1);
     let mut pos = Pos(0i32, 0);
 
-    for line in iter_lines() {
-        match (&line[..1], to_i32(&line[1..])) {
+    for line in input::rx_lines(r"(.)(\d+)") {
+        match line {
             ("F", n) => pos += wpos * n,
             ("N", n) => for _ in 0..n { wpos.step_up(); }
             ("S", n) => for _ in 0..n { wpos.step_down(); }

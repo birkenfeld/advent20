@@ -1,12 +1,12 @@
-use advtools::prelude::*;
-use advtools::input::iter_lines;
+use advtools::prelude::{iproduct, Itertools};
+use advtools::input;
 use advtools::grid::{Grid, Pos};
 
 const N: usize = 140;
 
 fn main() {
     let mut tiles = Grid::<bool>::empty(N, N);
-    for line in iter_lines() {
+    for line in input::lines() {
         let mut pos = tiles.center::<i32>();
         let mut chars = line.chars();
         while let Some(ch) = chars.next() {

@@ -1,12 +1,12 @@
-use advtools::prelude::*;
-use advtools::input::{iter_lines, to_u32};
+use advtools::prelude::{HashMap, HashSet, Itertools};
+use advtools::input;
 
 fn belongs([(a, b), (c, d)]: &[(u32, u32); 2], n: &u32) -> bool {
     (a <= n && n <= b) || (c <= n && n <= d)
 }
 
 fn main() {
-    let mut iter = iter_lines();
+    let mut iter = input::lines();
     let mut ranges = vec![];
     let mut tickets = vec![];
 
@@ -15,15 +15,15 @@ fn main() {
             break;
         }
         let split = line.split_whitespace().collect_vec();
-        let r1 = split[split.len() - 3].split('-').map(to_u32).collect_tuple().unwrap();
-        let r2 = split[split.len() - 1].split('-').map(to_u32).collect_tuple().unwrap();
+        let r1 = split[split.len() - 3].split('-').map(input::to_u32).collect_tuple().unwrap();
+        let r2 = split[split.len() - 1].split('-').map(input::to_u32).collect_tuple().unwrap();
         ranges.push([r1, r2]);
     }
 
-    let my_ticket = iter.next().unwrap().split(',').map(to_u32).collect_vec();
+    let my_ticket = iter.next().unwrap().split(',').map(input::to_u32).collect_vec();
 
     for line in iter.skip(1) {
-        tickets.push(line.split(',').map(to_u32).collect_vec());
+        tickets.push(line.split(',').map(input::to_u32).collect_vec());
     }
 
     let mut error_rate = 0;

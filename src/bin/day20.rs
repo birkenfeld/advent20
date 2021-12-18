@@ -1,5 +1,5 @@
-use advtools::prelude::*;
-use advtools::input::{iter_lines, to_u64};
+use advtools::prelude::{iproduct, Itertools};
+use advtools::input;
 use advtools::grid::{Grid, Pos, Dir, Dir::*};
 
 const MONSTER: &[(usize, usize)] = &[
@@ -7,6 +7,7 @@ const MONSTER: &[(usize, usize)] = &[
     (0, 1), (5, 1), (6, 1), (11, 1), (12, 1), (17, 1), (18, 1), (19, 1),
     (1, 2), (4, 2), (7, 2), (10, 2), (13, 2), (16, 2),
 ];
+const FORMAT: &str = r"Tile (\d+):|(.+)";
 
 // Coordinate transformations for all possible rotations/flips
 type Trans = fn(usize, usize, usize) -> (usize, usize);
@@ -65,11 +66,12 @@ fn main() {
     let mut tiles = Vec::new();
     let mut tile = vec![];
     let mut last_index = 0;
-    for line in iter_lines() {
-        if line.starts_with("Tile"){
-            last_index = to_u64(line[5..].trim_matches(':'));
+    for (index, line) in input::rx_lines::<(Option<_>, &str)>(FORMAT) {
+        if let Some(index) = index {
+            last_index = index;
         } else {
             tile.push(line.chars().map(|ch| ch == '#').collect_vec());
+            // Once we have square dimensions, the tile is complete.
             if tile.len() == tile[0].len() {
                 tiles.push(Tile {
                     index: last_index,

@@ -1,27 +1,24 @@
-use advtools::prelude::*;
-use advtools::input::input_string;
+use advtools::prelude::HashMap;
+use advtools::input;
 
 const MINE: &str = "shiny gold";
-type Map<'s> = HashMap<&'s str, Vec<(u32, &'s str)>>;
+type Map = HashMap<&'static str, Vec<(u32, &'static str)>>;
 
-fn contains_mine<'s>(bag: &'s str, map: &Map<'s>) -> bool {
-    map[&bag].iter().any(|(_, inner)| inner == &MINE || contains_mine(inner, map))
+fn contains_mine(bag: &'static str, map: &Map) -> bool {
+    map[&bag].iter().any(|&(_, inner)| inner == MINE || contains_mine(inner, map))
 }
 
-fn count_bags<'s>(bag: &'s str, map: &Map<'s>) -> u32 {
+fn count_bags(bag: &'static str, map: &Map) -> u32 {
     1 + map[&bag].iter().map(|(n, inner)| n * count_bags(inner, map)).sum::<u32>()
 }
 
 fn main() {
-    let input = input_string();
-    let map: Map = input.lines().map(|line| {
-        let (outer, inners) = line.split(" bags contain ").collect_tuple().unwrap();
-        (outer, inners.split(", ").filter_map(|part| {
-            part[..1].parse::<u32>().ok().map(|n| {
-                (n, part[2..].split(" bag").next().unwrap())
-            })
-        }).collect_vec())
-    }).collect();
+    let map: Map = input::rx_lines::<(&str, &str)>("(.+) bags contain (.+)")
+        .map(|(outer, inners)| (outer, inners.split(", ").filter_map(|part| {
+            // Parse inner bags, which might be empty ("contain no other bags").
+            let num = part[..1].parse().ok()?;
+            Some((num, part[2..].split(" bag").next().unwrap()))
+        }).collect())).collect();
 
     let count = map.keys().filter(|k| contains_mine(k, &map)).count();
     advtools::verify("Bag types that contain mine", count, 261);

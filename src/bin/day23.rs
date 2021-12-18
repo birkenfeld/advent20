@@ -1,5 +1,5 @@
-use advtools::prelude::*;
-use advtools::input::{input_string, to_usize};
+use advtools::prelude::Itertools;
+use advtools::input;
 
 const N: usize = 1_000_000;
 
@@ -30,8 +30,7 @@ fn play(next: &mut [usize], mut head: usize, rounds: usize) {
 }
 
 fn main() {
-    let input = input_string().trim().to_string();
-    let input = (0..input.len()).map(|i| to_usize(&input[i..i+1])).collect_vec();
+    let input = input::chars().map(|ch| (ch as u8 - b'0') as usize).collect_vec();
     let head = input[0];
     let mut next1 = vec![0; input.len() + 1];
     for (i, j) in (0..input.len()-1).zip(1..input.len()) {

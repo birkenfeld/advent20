@@ -1,14 +1,14 @@
-use advtools::prelude::*;
-use advtools::input::{iter_lines, to_i16};
+use advtools::prelude::{HashMap, Itertools};
+use advtools::input;
 use advtools::itertools::repeat_n;
 
-fn expand(rules: &HashMap<i16, Vec<Vec<i16>>>, rule: &Vec<Vec<i16>>, text: &str) -> Option<usize> {
+fn expand(rules: &HashMap<i16, Vec<Vec<i16>>>, rule: &[Vec<i16>], text: &str) -> Option<usize> {
     'alts: for alt in rule {
         let mut i = 0;
         for &subrule in alt {
-            if subrule == -1 && text[i..].starts_with("a") {
+            if subrule == -1 && text[i..].starts_with('a') {
                 i += 1;
-            } else if subrule == -2 && text[i..].starts_with("b") {
+            } else if subrule == -2 && text[i..].starts_with('b') {
                 i += 1;
             } else if let Some(j) = expand(rules, &rules[&subrule], &text[i..]) {
                 i += j;
@@ -22,7 +22,7 @@ fn expand(rules: &HashMap<i16, Vec<Vec<i16>>>, rule: &Vec<Vec<i16>>, text: &str)
 }
 
 fn main() {
-    let mut iter = iter_lines();
+    let mut iter = input::lines();
     let mut msgs = vec![];
     let mut rules = HashMap::new();
     rules.insert(-1, vec![]);
@@ -35,7 +35,7 @@ fn main() {
             break;
         }
         let parts = rule.split_whitespace().collect_vec();
-        let index = to_i16(parts[0].trim_matches(':'));
+        let index = input::to_i16(parts[0].trim_matches(':'));
         let mut substs = vec![vec![]];
         for &part in &parts[1..] {
             if part == "|" {
@@ -45,7 +45,7 @@ fn main() {
             } else if part == "\"b\"" {
                 substs.last_mut().unwrap().push(-2);
             } else {
-                substs.last_mut().unwrap().push(to_i16(part));
+                substs.last_mut().unwrap().push(input::to_i16(part));
             }
         }
         rules.insert(index, substs);
@@ -59,7 +59,7 @@ fn main() {
     let n = msgs.iter()
                 .filter_map(|msg| (2..10).cartesian_product(1..5).find(|&(n, m)| {
                     let rule = repeat_n(42, n).chain(repeat_n(31, m)).collect();
-                    n > m && expand(&rules, &vec![rule], msg) == Some(msg.len())
+                    n > m && expand(&rules, &[rule], msg) == Some(msg.len())
                 }))
                 .count();
     advtools::verify("Complex rules", n, 294);

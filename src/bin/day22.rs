@@ -1,6 +1,6 @@
 use std::{collections::hash_map::DefaultHasher, hash::{Hash, Hasher}};
-use advtools::prelude::*;
-use advtools::input::{iter_lines, to_u8};
+use advtools::prelude::{ArrayVec, HashSet};
+use advtools::input;
 
 type Deck = ArrayVec<u8, 50>;
 
@@ -45,11 +45,11 @@ fn main() {
     let mut deck1 = Deck::new();
     let mut deck2 = Deck::new();
     let mut deck = &mut deck1;
-    for line in iter_lines().skip(1) {
-        if line.starts_with("Player 2") {
-            deck = &mut deck2;
+    for item in input::parse_lines::<Option<u8>>().skip(1) {
+        if let Some(n) = item {
+            deck.push(n);
         } else {
-            deck.push(to_u8(line));
+            deck = &mut deck2;
         }
     }
 

@@ -1,14 +1,15 @@
-const INPUT: &[usize] = &[0, 14, 1, 3, 7, 9];
+use advtools::input;
 
 fn main() {
+    let input: Vec<usize> = input::parse();
     let mut turns = vec![0u32; 30000000];
 
-    for (t, &n) in INPUT.iter().enumerate() {
+    for (t, &n) in input.iter().enumerate() {
         turns[n] = t as u32 + 1;
     }
 
     let mut number = 0;
-    for t in INPUT.len()+1..30000000 {
+    for t in input.len()+1..30000000 {
         let prev_t = turns[number] as usize;
         turns[number] = t as u32;
 

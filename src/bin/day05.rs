@@ -1,10 +1,10 @@
-use advtools::prelude::*;
-use advtools::input::iter_lines;
+use advtools::prelude::{HashSet, Itertools};
+use advtools::input;
 
 fn main() {
-    let all_ids: HashSet<u32> = iter_lines()
-        .map(|line| line.chars().take(10).enumerate()
-             .map(|(i, c)| ((c == 'B' || c == 'R') as u32) << (9 - i))
+    let all_ids: HashSet<u32> = input::lines()
+        .map(|line| line.chars().rev().enumerate()
+             .map(|(i, c)| (matches!(c, 'B' | 'R') as u32) << i)
              .sum())
         .collect();
 

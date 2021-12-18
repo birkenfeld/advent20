@@ -1,4 +1,4 @@
-use advtools::input::iter_lines;
+use advtools::input;
 use advtools::itertools::{put_back, PutBack};
 
 #[derive(Debug)]
@@ -61,12 +61,12 @@ fn eval(expr: Expr) -> i64 {
 }
 
 fn main() {
-    let sum: i64 = iter_lines()
+    let sum: i64 = input::lines()
         .map(|line| eval(parse_expr(&mut put_back(line.chars()), false)))
         .sum();
     advtools::verify("No precedence", sum, 3885386961962i64);
 
-    let sum: i64 = iter_lines()
+    let sum: i64 = input::lines()
         .map(|line| eval(parse_expr(&mut put_back(line.chars()), true)))
         .sum();
     advtools::verify("+ before *", sum, 112899558798666i64);

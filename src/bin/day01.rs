@@ -1,8 +1,8 @@
 use advtools::itertools::Itertools;
-use advtools::input::iter_input;
+use advtools::input;
 
 fn main() {
-    let items: Vec<i32> = iter_input().sorted().collect();
+    let items: Vec<i32> = input::parse_lines().sorted().collect();
 
     let find_product = |n| items.iter().combinations(n)
         .find(|c| c.iter().copied().sum::<i32>() == 2020)

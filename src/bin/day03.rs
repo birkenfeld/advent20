@@ -1,10 +1,10 @@
-use advtools::input::iter_lines;
+use advtools::input;
 use advtools::grid::Grid;
 
 const DIRECTIONS: &[(usize, usize)] = &[(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
 
 fn main() {
-    let grid = Grid::new(iter_lines().map(|line| line.chars().collect()));
+    let grid = Grid::new(input::lines().map(|line| line.chars().collect()));
 
     let count_trees = |&(right, down)| (0..).step_by(right)
         .zip((0..grid.height()).step_by(down))

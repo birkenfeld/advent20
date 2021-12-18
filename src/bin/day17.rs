@@ -1,5 +1,5 @@
-use advtools::prelude::*;
-use advtools::input::iter_lines;
+use advtools::prelude::{iproduct, Itertools};
+use advtools::input;
 use std::ops::Range;
 
 const N: isize = 18;
@@ -35,7 +35,7 @@ fn process(grid: &mut [bool], diffs: &[(isize, isize, isize, isize)], wrange: Op
 
 fn main() {
     let mut grid = vec![false; (N*N*N*N) as usize];
-    for (y, line) in iter_lines().enumerate() {
+    for (y, line) in input::lines().enumerate() {
         for (x, ch) in line.chars().enumerate() {
             if ch == '#' { grid[index(0, 0, y as isize-4, x as isize-4).unwrap()] = true; }
         }

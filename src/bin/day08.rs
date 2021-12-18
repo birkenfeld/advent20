@@ -1,5 +1,5 @@
-use advtools::prelude::*;
-use advtools::input::iter_input;
+use advtools::prelude::{HashSet, Itertools};
+use advtools::input;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Op {
@@ -33,7 +33,7 @@ fn run(machine: &mut Machine, prog: &[Op]) -> Result<i32, i32> {
 
 fn main() {
     let mut machine = Machine::default();
-    let mut prog = iter_input().map(|line: Vec<String>| match &*line[0] {
+    let mut prog = input::parse_lines().map(|line: Vec<&str>| match line[0] {
         "nop" => Op::Nop(line[1].parse().expect("invalid op arg")),
         "acc" => Op::Acc(line[1].parse().expect("invalid op arg")),
         "jmp" => Op::Jmp(line[1].parse().expect("invalid op arg")),

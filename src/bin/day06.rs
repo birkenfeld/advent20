@@ -1,11 +1,11 @@
-use advtools::prelude::*;
-use advtools::input::input_string;
+use advtools::prelude::HashSet;
+use advtools::input;
 
 fn main() {
     let mut any_count = 0;
     let mut all_count = 0;
 
-    for group in input_string().split("\n\n") {
+    for group in input::string().split("\n\n") {
         let any_yes = HashSet::from_iter(group.chars().filter(|&ch| ch != '\n'));
         any_count += any_yes.len();
 

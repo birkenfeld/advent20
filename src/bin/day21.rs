@@ -1,15 +1,13 @@
-use advtools::prelude::*;
-use advtools::input::input_string;
+use advtools::prelude::{HashMap, HashSet, Itertools};
+use advtools::input;
 
 fn main() {
-    let input = input_string();
     let mut prods: Vec<(HashSet<_>, HashSet<_>)> = vec![];
     let mut allg_map = HashMap::new();
     let mut candidates: HashMap<_, HashSet<_>> = HashMap::new();
 
     // Parse input
-    for line in input.lines() {
-        let (ingrs, allgs) = line[..line.len()-1].split(" (contains ").collect_tuple().unwrap();
+    for (ingrs, allgs) in input::rx_lines::<(&str, &str)>(r"(.+) \(contains (.+)\)") {
         prods.push((ingrs.split_whitespace().collect(), allgs.split(", ").collect()));
     }
 

@@ -1,15 +1,19 @@
-use advtools::prelude::*;
-use advtools::input::{iter_lines, to_u64};
+use advtools::prelude::HashMap;
+use advtools::input;
+
+const FORMAT: &str = r"mem\[(\d+)\] = (\d+)|mask = (.+)";
 
 fn process<M, X, FM, FA>(mut process_mask: FM, mut process_assign: FA)
 where FM: FnMut(u64, u64, u64) -> M,
       FA: FnMut(u64, u64, &M) -> X
 {
     let mut mask_state = None;
-    for line in iter_lines() {
-        if line.starts_with("mask =") {
+    for (mem, mask) in input::rx_lines::<(Option<_>, &str)>(FORMAT) {
+        if let Some((addr, val)) = mem {
+            process_assign(addr, val, mask_state.as_ref().unwrap());
+        } else {
             let (mut zero, mut one) = (0, 0);
-            for (i, ch) in line[7..].chars().enumerate() {
+            for (i, ch) in mask.chars().enumerate() {
                 let bit = 35-i;
                 match ch {
                     '0' => zero |= 1 << bit,
@@ -18,11 +22,6 @@ where FM: FnMut(u64, u64, u64) -> M,
                 }
             }
             mask_state = Some(process_mask(zero, one, !zero & !one));
-        } else {
-            let mut parts = line.split(|ch| ch == '[' || ch == ']');
-            let addr = to_u64(parts.nth(1).unwrap());
-            let val = to_u64(&parts.next().unwrap()[3..]);
-            process_assign(addr, val, mask_state.as_ref().unwrap());
         }
     }
 }
