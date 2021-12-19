@@ -15,15 +15,17 @@ fn main() {
             break;
         }
         let split = line.split_whitespace().collect_vec();
-        let r1 = split[split.len() - 3].split('-').map(input::to_u32).collect_tuple().unwrap();
-        let r2 = split[split.len() - 1].split('-').map(input::to_u32).collect_tuple().unwrap();
+        let r1 = split[split.len() - 3].split('-').filter_map(|p| p.parse().ok())
+                                                  .collect_tuple().unwrap();
+        let r2 = split[split.len() - 1].split('-').filter_map(|p| p.parse().ok())
+                                                  .collect_tuple().unwrap();
         ranges.push([r1, r2]);
     }
 
-    let my_ticket = iter.next().unwrap().split(',').map(input::to_u32).collect_vec();
+    let my_ticket: Vec<i32> = iter.next().unwrap().split(',').filter_map(|p| p.parse().ok()).collect();
 
     for line in iter.skip(1) {
-        tickets.push(line.split(',').map(input::to_u32).collect_vec());
+        tickets.push(line.split(',').filter_map(|p| p.parse().ok()).collect_vec());
     }
 
     let mut error_rate = 0;

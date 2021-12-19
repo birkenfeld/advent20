@@ -35,7 +35,7 @@ fn main() {
             break;
         }
         let parts = rule.split_whitespace().collect_vec();
-        let index = input::to_i16(parts[0].trim_matches(':'));
+        let index = parts[0].trim_matches(':').parse().unwrap();
         let mut substs = vec![vec![]];
         for &part in &parts[1..] {
             if part == "|" {
@@ -45,7 +45,7 @@ fn main() {
             } else if part == "\"b\"" {
                 substs.last_mut().unwrap().push(-2);
             } else {
-                substs.last_mut().unwrap().push(input::to_i16(part));
+                substs.last_mut().unwrap().push(part.parse().unwrap());
             }
         }
         rules.insert(index, substs);
