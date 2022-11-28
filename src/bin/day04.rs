@@ -24,7 +24,7 @@ fn main() {
                 },
                 "hcl" => val.starts_with('#') && u32::from_str_radix(&val[1..], 16).is_ok(),
                 "ecl" => ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(&val),
-                "pid" => val.len() == 9 && val.chars().all(|ch| ch.is_digit(10)),
+                "pid" => val.len() == 9 && val.chars().all(|ch| ch.is_ascii_digit()),
                 "cid" => continue,
                 _ => false,
             };
